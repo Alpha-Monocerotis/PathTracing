@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string>
 
 #include "Image.h"
 #include "Vec3f.h"
@@ -50,26 +51,25 @@ void Image::wirte_image(string filename) {
 
     FILE* file = fopen(filename.c_str(), "wb");
     string rgb = "";
-    for (int x = 0; x < width; ++x)
-    {
-        for (int y = 0; y < height; ++y)
-        {
+    long long length = 0;
+    for (int x = 0; x < width; ++x) {
+        for (int y = 0; y < height; ++y) {
             int r = int(image[x][y].x > 255 ? 255 : image[x][y].x);
             int g = int(image[x][y].y > 255 ? 255 : image[x][y].y);
             int b = int(image[x][y].z > 255 ? 255 : image[x][y].z);
-            char r1 = exchange_int_char(r / 16);
-            char r2 = exchange_int_char(r % 16);
-            char g1 = exchange_int_char(g / 16);
-            char g2 = exchange_int_char(g % 16);
-            char b1 = exchange_int_char(b / 16);
-            char b2 = exchange_int_char(b % 16);
-            rgb += r1 + r2 + g1 + g2 + b1 + b2;
-            if (r+g+b != 0)
-                cout<<r1<<r2<<g1<<g2<<b1<<b2<<endl;
+            // char r1 = exchange_int_char(r / 16);
+            // char r2 = exchange_int_char(r % 16);
+            // char g1 = exchange_int_char(g / 16);
+            // char g2 = exchange_int_char(g % 16);
+            // char b1 = exchange_int_char(b / 16);
+            // char b2 = exchange_int_char(b % 16);
+            string x = std::to_string(r) + " " + std::to_string(g) + " " + std::to_string(b) + "&";
+            length += x.size();
+            rgb += x;
         }
     }
-    cout<<sizeof(rgb) << " " << width << " " << height <<endl;
-    fwrite(rgb.c_str(),sizeof(char),width * height * 6,file);
+    cout<<rgb.length() << " " << width << " " << height <<" " << endl;
+    fwrite(rgb.c_str(),sizeof(char),length,file);
     // fprintf(file, rgb.c_str());
     fclose(file);
 }
