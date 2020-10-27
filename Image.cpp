@@ -1,88 +1,7 @@
+#include <stdio.h>
+
 #include "Image.h"
-#pragma pack(2)
-typedef unsigned char BYTE;
-typedef unsigned short WORD;
-typedef unsigned long DWORD;
-typedef long LONG;
-
 #include "Vec3f.h"
-
-struct BmpFileHeader
-{
-    WORD    bfType;
-    DWORD   bfSize;
-    WORD    bfReserved1;
-    WORD    bfReserved2;
-    DWORD   bfOffBits;
-};
-
-struct BmpInfoHeader
-{
-    DWORD   biSize;             
-    LONG    biWidth;            
-    LONG    biHeight;           
-    WORD    biPlanes;           
-    WORD    biBitCount;         
-    DWORD   biCompression;      
-    DWORD   biSizeImage;        
-    LONG    biXPelsPerMeter;    
-    LONG    biYPelsPerMeter;    
-    DWORD   biClrUsed;          
-    DWORD   biClrImportant; 
-};
-
-struct RGBType
-{
-    unsigned char r;
-    unsigned char g;
-    unsigned char b;
-
-    void set(unsigned char r1, unsigned char g1, unsigned char b1)
-    {
-        r = r1;
-        g = g1;
-        b = b1;
-    }
-};
-
-void saveBmp(const char *fileName, int w, int h, RGBType *data)
-{
-    int size = 4 * w * h;
-
-    //设置bmpfileheader的各种数值
-    BmpFileHeader fileHeader;
-    fileHeader.bfType = 0x4D42;//0x4d42即字母 'B''M'
-    fileHeader.bfReserved1 = 0;//保留位1
-    fileHeader.bfReserved2 = 0;//保留位2
-    fileHeader.bfSize = 54 + size;//文件总长度 文件头(54字节) + 图像数据(size)
-    fileHeader.bfOffBits = 54;//文件头长度
-
-    //设置infoheader的值
-    BmpInfoHeader infoHeader = {0};
-    infoHeader.biSize = 40;//infoheader的长度
-    infoHeader.biHeight = -h;//高度
-    infoHeader.biWidth = w;//宽度
-    infoHeader.biPlanes = 1;
-    infoHeader.biBitCount = 24;//颜色位数。一般为24
-    infoHeader.biSizeImage = 0;//默认为0
-    infoHeader.biCompression = 0;//压缩率 ，默认为0
-
-
-    //将传入的RGB数值写入文件中
-    FILE *output = fopen(fileName, "wb");
-    if (output)
-    {
-        fwrite(&fileHeader, 14, 1, output);
-        fwrite(&infoHeader, 40, 1, output);
-        for (int i = 0; i < w * h; ++i)
-        {
-            RGBType rgb = data[i];
-            unsigned char color[3] = {rgb.r, rgb.g, rgb.b};
-            fwrite(color, 3, 1, output);
-        }
-        fclose(output);
-    }
-}
 
 
 Image::Image() {
@@ -98,20 +17,59 @@ void Image::setPixel(int x, int y, Vec3f color) {
     image[x][y] = color;
 }
 
+char exchange_int_char(int a)      //整型转换为字符型
+{
+     char b;
+     switch (a)
+     {
+     case 0:b = '0'; break;
+     case 1:b = '1'; break;
+     case 2:b = '2'; break;
+     case 3:b = '3'; break;
+     case 4:b = '4'; break;
+     case 5:b = '5'; break;
+     case 6:b = '6'; break;
+     case 7:b = '7'; break;
+     case 8:b = '8'; break;
+     case 9:b = '9'; break;
+     case 10:b = 'A'; break;
+     case 11:b = 'B'; break;
+     case 12:b = 'C'; break;
+     case 13:b = 'D'; break;
+     case 14:b = 'E'; break;
+     case 15:b = 'F'; break;
+     default:break;
+     }
+     return b;
+}
+
+
 void Image::wirte_image(string filename) {
     int n = width * height;
 
-    RGBType *pixels = new RGBType[n];
+
+    FILE* file = fopen(filename.c_str(), "wb");
+    string rgb = "";
     for (int x = 0; x < width; ++x)
     {
         for (int y = 0; y < height; ++y)
         {
-            int i = y * width + x;
             int r = int(image[x][y].x > 255 ? 255 : image[x][y].x);
             int g = int(image[x][y].y > 255 ? 255 : image[x][y].y);
             int b = int(image[x][y].z > 255 ? 255 : image[x][y].z);
-            pixels[i].set(r,g,b);
+            char r1 = exchange_int_char(r / 16);
+            char r2 = exchange_int_char(r % 16);
+            char g1 = exchange_int_char(g / 16);
+            char g2 = exchange_int_char(g % 16);
+            char b1 = exchange_int_char(b / 16);
+            char b2 = exchange_int_char(b % 16);
+            rgb += r1 + r2 + g1 + g2 + b1 + b2;
+            if (r+g+b != 0)
+                cout<<r1<<r2<<g1<<g2<<b1<<b2<<endl;
         }
     }
-    saveBmp(filename.c_str(), width, height, pixels);
+    cout<<sizeof(rgb) << " " << width << " " << height <<endl;
+    fwrite(rgb.c_str(),sizeof(char),width * height * 6,file);
+    // fprintf(file, rgb.c_str());
+    fclose(file);
 }

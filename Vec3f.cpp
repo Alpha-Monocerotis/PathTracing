@@ -14,10 +14,11 @@ Vec3f::Vec3f() {
 }
 
 Vec3f::Vec3f(const Vec3f &other) {
-    x = other.x;
+    x = other.x; 
     y = other.y;
     z = other.z;
 }
+
 Vec3f::Vec3f(double x_, double y_, double z_) {
     x = x_;
     y = y_;

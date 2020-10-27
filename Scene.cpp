@@ -12,10 +12,8 @@ void Scene::addSceneObject(SceneObject object) {
 }
 
 bool Scene::getIntersection(Ray ray, Vec3f& hit_point) {
-    for(SceneObject obj:sceneObjects) {
-        if(obj.intersects(ray, hit_point)) {
-            return true;
-        }
+    for(int i=0;i<sceneObjects.size();i++) {
+        if(sceneObjects[i].intersects(ray, hit_point)) return true;
     }
     return false;
 }
